@@ -1,5 +1,4 @@
 import socket, threading
-from concurrent.futures import thread
 
 host = "localhost"
 port = 5000
@@ -14,6 +13,8 @@ def server_program(conn, address):
         if not data:
             break
         print("Server received: ", data, "from port: ", address)
+        data = input("Respond to %d: " % address[1])
+        conn.send(data.encode())
     conn.close()
 
 while True:
