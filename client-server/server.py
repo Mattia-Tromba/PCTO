@@ -8,7 +8,7 @@ server_socket.bind((host, port))
 print("Starting...")
 server_socket.listen(6)
 
-def server_program(conn, address):
+def server_program(conn):
     connessione = sqlite3.connect(Path.cwd().parent / "database" / "database.db")
     c = connessione.cursor()
     c.execute("create table if not exists users (email varchar[50], token varchar[27])")
@@ -25,7 +25,7 @@ def server_program(conn, address):
         conn.send("invia la tua email per la registrazione: ".encode("utf-8"))
         email = conn.recv(1024).decode()
         caratteri = string.ascii_letters + string.digits
-        token = ''.join(secrets.choice(caratteri) for i in range(26))
+        token = ''.join(secrets.choice(caratteri) for _ in range(26))
         conn.send(("questo è il tuo token: %s" %token).encode("utf-8"))
         c.execute("insert into users (email, token) values (?, ?)", (email, token))
         connessione.commit()
@@ -45,7 +45,7 @@ def server_program(conn, address):
     conn.close()
 
 while True:
-    conn, address = server_socket.accept()
+    con, address = server_socket.accept()
     print("Connection from: " + str(address))
-    thread = (threading.Thread(target=server_program, args=(conn, address,)))
+    thread = (threading.Thread(target=server_program, args=(con,)))
     thread.start()

@@ -9,6 +9,8 @@ def client_program():
         print(client.recv(1024).decode())
         message = input(" -> ")
         client.send(message.encode())
+        if message != "r" and message != "a":
+            print(client.recv(1024).decode())
     if message == "r":
         print(client.recv(1024).decode())
         messaggio = input(" -> ")
