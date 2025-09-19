@@ -1,5 +1,6 @@
 import socket, threading, sqlite3
 import secrets, string
+import re
 
 
 
@@ -31,29 +32,34 @@ def server_program(conn, address):
     con.commit()
     cur = con.cursor()
     entrata = ""
-    while entrata != "r" and entrata != "a":
+    while (entrata != "r" and entrata != "a") or entrata == "":
         conn.send("vuoi registrarti (scrivi r) o vuoi autenticarti (scrivi a)?".encode("utf-8"))
         entrata = conn.recv(1024).decode()
     if entrata == "r":
-        conn.send("inserisci email".encode("utf-8"))
-        email = conn.recv(1024).decode()
-        token = genera_token()
-        cur.execute("INSERT INTO users (nome, token, dataIscrizione) VALUES (?, ?, CURRENT_TIMESTAMP)", (email, token))
-        con.commit()
-        conn.send(("Registrazione completata. Token: %s (bye per uscire)" %token).encode())
-        conn.close()
+        x=0
+        while x!=1:
+            conn.send("inserisci email".encode("utf-8"))
+            email = conn.recv(1024).decode("utf-8")
+            if re.match (r'^\w+@\w+\.\w', email):
+                token = genera_token()
+                cur.execute("INSERT INTO users (nome, token, dataIscrizione) VALUES (?, ?, CURRENT_TIMESTAMP)",
+                            (email, token))
+                con.commit()
+                conn.send(("Registrazione completata. Token: %s (bye per uscire)" % token).encode())
+                x=1
+            else:
+                conn.send("email non valida, riprova. ".encode())
+
     if entrata == "a":
         conn.send("inserisci email".encode("utf-8"))
-        email = conn.recv(1024).decode()
+        email = conn.recv(1024).decode("utf-8")
         conn.send("inserisci token".encode("utf-8"))
         token = conn.recv(1024).decode()
         cur.execute("SELECT * FROM users WHERE nome = ? AND token = ?", (email, token))
         if cur.fetchone() is None:
             conn.send("utente non trovato, ricontrolla il token o la email oppure registrati".encode("utf-8"))
-            conn.close()
         else:
-            conn.send("utente trovato".encode("utf-8"))
-            conn.close()
+            conn.send("utente trovato".encode())
     conn.close()
 
 while True:

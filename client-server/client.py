@@ -8,7 +8,9 @@ def client_program():
     while message != "bye":
         print(client.recv(1024).decode())
         message = input(" -> ")
-        client.send(message.encode())
+        while message =="":
+            message = input(" -> ")
+        client.send(message.encode("utf-8"))
         """if client.recv(1024).decode() == "utente trovato":
             client.close()
         if client.recv(1024).decode() == "utente non trovato, ricontrolla il token o la email oppure registrati ":
