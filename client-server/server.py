@@ -1,6 +1,8 @@
 import socket, threading, sqlite3
 import secrets, string
 
+
+
 def genera_token():
     caratteri = string.ascii_letters + string.digits
     return ''.join(secrets.choice(caratteri) for _ in range(26))
@@ -15,6 +17,18 @@ server_socket.listen(6)
 
 def server_program(conn, address):
     con = sqlite3.connect("users.db")
+    cur = con.cursor()
+
+    cur.execute("""
+                CREATE TABLE IF NOT EXISTS users
+                (
+                    nome varchar not null,
+                    token varchar unique not null,
+                    dataIscrizione varchar not null
+                )
+                """)
+
+    con.commit()
     cur = con.cursor()
     entrata = ""
     while entrata != "r" and entrata != "a":
