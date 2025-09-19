@@ -1,4 +1,4 @@
-import socket, threading, sqlite3, secrets, string
+import socket, threading, sqlite3, secrets, string, re
 from pathlib import Path
 
 host = "localhost"
@@ -14,16 +14,16 @@ def server_program(conn):
     c.execute("create table if not exists users (email varchar[50], token varchar[27])")
     carattere = ""
 
-    while carattere != 'r' and carattere != 'a':
+    while (carattere != 'r' and carattere != 'a') or carattere == "":
         conn.send("Vuoi registrarti o autenticarti? (r/a)".encode("utf-8"))
         carattere = conn.recv(1024).decode()
 
-        if carattere != 'r' and carattere != 'a':
+        if (carattere != 'r' and carattere != 'a') or (carattere == ""):
             conn.send("inserisci o la lettera a o la lettera r".encode("utf-8"))
 
     if carattere == "r":
         conn.send("invia la tua email per la registrazione: ".encode("utf-8"))
-        email = conn.recv(1024).decode()
+        email = conn.recv(1024).decode("utf-8")
         caratteri = string.ascii_letters + string.digits
         token = ''.join(secrets.choice(caratteri) for _ in range(26))
         conn.send(("questo è il tuo token: %s" %token).encode("utf-8"))
