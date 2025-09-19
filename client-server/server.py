@@ -23,7 +23,7 @@ def server_program(conn, address):
     cur.execute("""
                 CREATE TABLE IF NOT EXISTS users
                 (
-                    nome varchar not null,
+                    nome varchar primary key not null,
                     token varchar unique not null,
                     dataIscrizione varchar not null
                 )
