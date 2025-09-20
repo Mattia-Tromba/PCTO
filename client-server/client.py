@@ -1,26 +1,36 @@
 import socket
 
-def client_program():
-    client = socket.socket()
-    client.connect(('localhost', 5000))
-    print(client)
-    message = ""
-    while message != "r" or message != "a":
-        message = input(" -> ")
-        client.send(message.encode())
-        print(client.recv(1024).decode())
-    if message == "r":
-        print(client.recv(1024).decode())
-        client.send(input(" -> ").encode())
-        print(client.recv(1024).decode())
-    else:
-        while True:
-            print(client.recv(1024).decode())
-            client.send(input(" -> ").encode())
-            if client.recv(1024).decode() == "invia il token: ":
-                client.send(input(" -> ").encode())
-                print(client.recv(1024).decode())
-                break
-    client.close()
+from consts import HOST, PORT
 
-client_program()
+MSG_SERVER = "Server ->"
+MSG_CLIENT = "You <- "
+
+
+def main():
+    conn = socket.socket()
+    conn.connect((HOST, PORT))
+
+    print(MSG_SERVER, conn.recv(1024).decode())
+    while True:
+        msgout = conn.recv(1024).decode()
+        print(MSG_SERVER, msgout)
+
+        # List of exit points
+        if "Max retries reached" in msgout:
+            break
+        elif "Reconnect" in msgout:
+            break
+        elif "authenticated" in msgout:
+            continue
+
+        # Check input
+        msgin = input(MSG_CLIENT)
+        if msgin == "bye":
+            break
+        conn.send(msgin.encode("utf-8"))
+
+    conn.close()
+
+
+if __name__ == "__main__":
+    main()
