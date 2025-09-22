@@ -2,44 +2,17 @@ import socket, re
 
 def client_program():
     client = socket.socket()
-    client.connect(('localhost', 5000))
+    client.connect(('localhost', 5001))
     print(client)
-    message = ""
-    while message != "r" and message != "a":
-        print(client.recv(1024).decode())
-        message = input(" -> ")
+    while True:
+        message = client.recv(1024).decode("utf-8")
+        print(message)
+        message = input("-> ")
         while message == "":
-            message = input(" -> ")
-        client.send(message.encode())
-        if message != "r" and message != "a":
-            print(client.recv(1024).decode())
-    if message == "r":
-        print(client.recv(1024).decode())
-        messaggio = input(" -> ")
-        print(messaggio)
-        while message == "" or not re.match(r"^\w+@\w+\.\w+$", message):
-            print("email errata")
-            message = input(" -> ")
-        client.send(messaggio.encode("utf-8"))
-        print(client.recv(1024).decode())
-    else:
-        successo = False
-        print(client.recv(1024).decode())
-        while not successo:
-            message = input(" -> ")
-            while message == "":
-                message = input(" -> ")
-            client.send(message.encode())
-            print(client.recv(1024).decode())
-            messaggio = input(" -> ")
-            while message == "":
-                message = input(" -> ")
-            client.send(messaggio.encode())
-            message = client.recv(1024).decode()
-            print(message)
-            if message == "autenticazione effettuata":
-                successo = True
-
+            message = input("-> ")
+        client.send(message.encode("utf-8"))
+        if message == "quit":
+            break
     client.close()
 
 client_program()
