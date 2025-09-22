@@ -2,20 +2,16 @@ import socket
 
 def client_program():
     client = socket.socket()
-    client.connect(('localhost', 8888))
+    client.connect(('localhost', 8999))
     print(client)
     message = ""
     while message != "bye":
-        print(client.recv(1024).decode())
+        entrata=(client.recv(1024).decode())
+        print("il server dice: " + entrata)
         message = input(" -> ")
         while message =="":
             message = input(" -> ")
         client.send(message.encode("utf-8"))
-        """if client.recv(1024).decode() == "utente trovato":
-            client.close()
-        if client.recv(1024).decode() == "utente non trovato, ricontrolla il token o la email oppure registrati ":
-            client.close()"""
-        #zMJY918XTCrgAPp4ckYnZwivhO
     client.close()
 
 client_program()
