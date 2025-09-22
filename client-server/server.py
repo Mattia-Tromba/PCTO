@@ -41,8 +41,6 @@ def autenticazione(con, cur):
                 conn.send("utente trovato\nOra scrivendo un messaggio puoi iniziare la conversazione".encode())
                 x=1
 
-
-
 def genera_token():
     caratteri = string.ascii_letters + string.digits
     return ''.join(secrets.choice(caratteri) for _ in range(26))
@@ -73,11 +71,12 @@ def server_program(conn, address):
     autenticazione(con, cur)
     entrata=""
     while entrata !="bye":
-        entrata = conn.recv(1024).decode()
+        entrata = (conn.recv(1024).decode())
         print("client dice:", entrata)
         invio=input(" -> ")
+        while invio =="":
+            invio = input(" -> ")
         conn.send(invio.encode("utf-8"))
-
     conn.close()
 
 while True:
