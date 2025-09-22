@@ -7,6 +7,9 @@ def client_program():
     while True:
         message = client.recv(1024).decode("utf-8")
         print(message)
+        if message == "troppi tentativi, chiusura connessione":
+            client.close()
+            return
         message = input("-> ")
         while message == "":
             message = input("-> ")
