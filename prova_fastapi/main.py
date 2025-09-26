@@ -36,6 +36,10 @@ def create():
 @app.put("/db/registrazione")
 def registrazione(email: str, session: SessionDep):
     if re.match(r'^\w+@\w+\.\w', email):
+        utenti = session.exec(select(Users)).all()
+        for u in utenti:
+            if email == u.email:
+                raise HTTPException(status_code=404, detail="Email già registrata")
         caratteri = string.ascii_letters + string.digits
         tk = ''.join(secrets.choice(caratteri) for _ in range(26))
         user = Users(email=email, token=tk, data=date.today())
@@ -60,7 +64,7 @@ def intervallo(id1, id2: int, session: SessionDep):
         user = session.get(Users, x)
         if user is None:
             raise HTTPException(status_code=404, detail="First user not found")
-        dict.update({f"user_{x}": user.email})
+        dict.update({f"user {x}": user.email})
     return dict
 
 @app.put("/db/cambiatoken")
@@ -77,7 +81,7 @@ def cambiatk(email: str, token: str, session: SessionDep):
     raise HTTPException(status_code=404, detail="Token non valido")
 
 @app.get("/db/trova/{id}")
-def trova(id: int, session: SessionDep) -> Users:
+def trova(id: int, session: SessionDep):
     user = session.get(Users, id)
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
@@ -95,10 +99,15 @@ def rimuovi(email: str, token : str, session: SessionDep):
 @app.get("/db/iscrizioni/dal/{data}/ad/oggi")
 def iscrizioni_da(data : date, session: SessionDep):
     oggi = date.today()
+    dict = {}
     richiesta = session.exec(select(Users).where((Users.data >= data) & (Users.data <= oggi))).all()
     if richiesta is None:
         raise HTTPException(status_code=404, detail="User not found")
-    return richiesta
+    y = 1
+    for x in richiesta:
+        dict.update({f"user {y}": x.email})
+        y+=1
+    return dict
 
 @app.get("/db/numero/utenti")
 def numero_utenti(session: SessionDep):
