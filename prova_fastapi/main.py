@@ -1,13 +1,13 @@
+<<<<<<< HEAD
 import json
 from typing import Annotated
-from datetime import date
+from datetime import date, datetime
 from fastapi import FastAPI, Depends, HTTPException
 from sqlmodel import Field, Session, SQLModel, create_engine, select
 import secrets, re, string
 
 app = FastAPI()
 
-#connessione al database
 urldb = "sqlite:///./test.db"
 connessione = {"check_same_thread": False}
 engine = create_engine(urldb)
@@ -76,3 +76,33 @@ def cambiatk(email: str, token: str, session: SessionDep):
         session.commit()
         return {"token": "aggiornato"}
     raise HTTPException(status_code=404, detail="Token non valido")
+
+@app.get("/db/trova/{id}")
+def trova(id: int, session: SessionDep) -> Users:
+    user = session.get(Users, id)
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+@app.delete("/db/rimuovi/{email}/{token}")
+def rimuovi(email: str, token : str, session: SessionDep):
+    persona = session.exec(select(Users).where(Users.email == email, Users.token == token)).first()
+    if persona is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    session.delete(persona)
+    session.commit()
+    return "user deleted"
+
+@app.get("/db/iscrizioni/dal/{data}/ad/oggi")
+def iscrizioni_da(data : date, session: SessionDep):
+    oggi = date.today()
+    richiesta = session.exec(select(Users).where((Users.data >= data) & (Users.data <= oggi))).all()
+    if richiesta is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return richiesta
+
+@app.get("/db/numero/utenti")
+def numero_utenti(session: SessionDep):
+    utenti = session.exec(select(Users)).all()
+    numero = len(utenti)
+    return numero
