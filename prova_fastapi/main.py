@@ -8,7 +8,6 @@ import secrets, re, string
 app = FastAPI()
 
 urldb = "sqlite:///./test.db"
-connessione = {"check_same_thread": False}
 engine = create_engine(urldb)
 
 #modello tabella database
@@ -21,7 +20,6 @@ class Users(SQLModel, table=True):
 def crea_tabella():
     SQLModel.metadata.create_all(engine)
 
-#sessione (salvataggio e modifica oggetti nel database)
 def get_session():
     with Session(engine) as session:
         yield session
@@ -39,7 +37,7 @@ def registrazione(email: str, session: SessionDep):
         utenti = session.exec(select(Users)).all()
         for u in utenti:
             if email == u.email:
-                raise HTTPException(status_code=404, detail="Email già registrata")
+                raise HTTPException(status_code=400, detail="Email già registrata")
         caratteri = string.ascii_letters + string.digits
         tk = ''.join(secrets.choice(caratteri) for _ in range(26))
         user = Users(email=email, token=tk, data=date.today())
@@ -52,34 +50,34 @@ def registrazione(email: str, session: SessionDep):
 def autenticazione(email: str, token: str, session: SessionDep):
     user = session.scalars(select(Users).where(Users.email == email)).first()
     if user is None:
-        raise HTTPException(status_code=404, detail="Email non valida")
+        raise HTTPException(status_code=400, detail="Email non valida")
     if user.token != token:
-        raise HTTPException(status_code=404, detail="Token non valido")
+        raise HTTPException(status_code=400, detail="Token non valido")
     return {"autenticazione" : "effettuata"}
 
 @app.get("/db/intervallo")
 def intervallo(id1, id2: int, session: SessionDep):
-    dict = {}
+    diz = {}
     for x in range(int(id1), int(id2)+1):
         user = session.get(Users, x)
         if user is not None:
-            dict.update({f"user {x}": user.email})
+            diz.update({f"user {x}": user.email})
         else:
             continue
-    return dict
+    return diz
 
 @app.put("/db/cambiatoken")
 def cambiatk(email: str, token: str, session: SessionDep):
     user = session.scalars(select(Users).where(Users.email == email)).first()
     if user is None:
-        raise HTTPException(status_code=404, detail="user not found")
+        raise HTTPException(status_code=400, detail="user not found")
     if user.token == token:
         caratteri = string.ascii_letters + string.digits
         tk = ''.join(secrets.choice(caratteri) for _ in range(26))
         user.token = tk
         session.commit()
-        return {"token": "aggiornato"}
-    raise HTTPException(status_code=404, detail="Token non valido")
+        return {"token aggiornato": tk}
+    raise HTTPException(status_code=400, detail="Token non valido")
 
 @app.get("/db/trova/{id}")
 def trova(id: int, session: SessionDep):
