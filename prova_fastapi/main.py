@@ -62,9 +62,10 @@ def intervallo(id1, id2: int, session: SessionDep):
     dict = {}
     for x in range(int(id1), int(id2)+1):
         user = session.get(Users, x)
-        if user is None:
-            raise HTTPException(status_code=404, detail="First user not found")
-        dict.update({f"user {x}": user.email})
+        if user is not None:
+            dict.update({f"user {x}": user.email})
+        else:
+            continue
     return dict
 
 @app.put("/db/cambiatoken")
