@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import json
 from typing import Annotated
 from datetime import date, datetime
